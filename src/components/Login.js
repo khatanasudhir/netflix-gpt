@@ -1,69 +1,91 @@
-import React, { useRef, useState } from "react";
+import { useState, useRef } from "react";
 import Header from "./Header";
 import { checkValidData } from "../utilis/validate";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  updateProfile,
+} from "firebase/auth";
 import { auth } from "../utilis/firebase";
-import { createUserWithEmailAndPassword, signInWithEmailAndPassword } from "firebase/auth";
+import { useDispatch } from "react-redux";
+import { addUser } from "../utilis/userSlice";
+import { USER_AVATAR } from "../utilis/constants";
+import { BACKGROUND_IMAGE } from "../utilis/constants";
 
 const Login = () => {
-  const [isSignedIn, setIsSignedIN] = useState(true);
-
+  const [isSignedIn, setIsSignInForm] = useState(true);
   const [errorMessage, setErrorMessage] = useState(null);
+  const dispatch = useDispatch();
 
+  const name = useRef(null);
   const email = useRef(null);
   const password = useRef(null);
-  const name = useRef(null);
 
-  const handleClick = () => {
-    //console.log(name);
+  const handleButtonClick = () => {
     const message = checkValidData(email.current.value, password.current.value);
-    console.log(message);
     setErrorMessage(message);
-
     if (message) return;
 
     if (!isSignedIn) {
-      // sign up
-
+      // Sign Up Logic
       createUserWithEmailAndPassword(
         auth,
         email.current.value,
         password.current.value
       )
         .then((userCredential) => {
-          // Signed up
           const user = userCredential.user;
-          console.log(user);
+          updateProfile(user, {
+            displayName: name.current.value,
+            photoURL: USER_AVATAR,
+          })
+            .then(() => {
+              const { uid, email, displayName, photoURL } = auth.currentUser;
+              dispatch(
+                addUser({
+                  uid: uid,
+                  email: email,
+                  displayName: displayName,
+                  photoURL: photoURL,
+                })
+              );
+            })
+            .catch((error) => {
+              setErrorMessage(error.message);
+            });
         })
         .catch((error) => {
           const errorCode = error.code;
           const errorMessage = error.message;
-          // ..
-          setErrorMessage(errorCode + " " + errorMessage);
+          setErrorMessage(errorCode + "-" + errorMessage);
         });
     } else {
-      // sign in logic
-      signInWithEmailAndPassword(auth, email.current.value, password.current.value)
+      // Sign In Logic
+      signInWithEmailAndPassword(
+        auth,
+        email.current.value,
+        password.current.value
+      )
         .then((userCredential) => {
           // Signed in
           const user = userCredential.user;
-          console.log(user);
         })
         .catch((error) => {
           const errorCode = error.code;
           const errorMessage = error.message;
-          setErrorMessage(errorCode+" "+errorMessage);
+          setErrorMessage(errorCode + "-" + errorMessage);
         });
     }
   };
 
   const toggleSignInForm = () => {
-    setIsSignedIN(!isSignedIn);
+    setIsSignInForm(!isSignedIn);
   };
   return (
     <div>
       <Header />
       <div className="absolute">
-        <img src="https://assets.nflxext.com/ffe/siteui/vlv3/cacfadb7-c017-4318-85e4-7f46da1cae88/e43aa8b1-ea06-46a5-abe3-df13243e718d/IN-en-20240603-popsignuptwoweeks-perspective_alpha_website_large.jpg" />
+        <img src={BACKGROUND_IMAGE} alt="backgroundImg" />
       </div>
       <form
         onSubmit={(e) => e.preventDefault()}
@@ -94,7 +116,7 @@ const Login = () => {
         />
         <p className="text-red-700 font-bold text-lg py-2">{errorMessage}</p>
         <button
-          onClick={handleClick}
+          onClick={handleButtonClick}
           className="w-full p-4 my-4 bg-red-700 rounded-sm"
         >
           {isSignedIn ? "Sign In" : "Sign up"}
