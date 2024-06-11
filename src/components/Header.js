@@ -7,6 +7,7 @@ import { addUser, removeUser } from "../utilis/userSlice";
 import { onAuthStateChanged } from "firebase/auth";
 import { useEffect } from "react";
 import { LOGO } from "../utilis/constants";
+import { toggleGptSearchView } from "../utilis/gptSlice";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -22,6 +23,10 @@ const Header = () => {
         navigate("/error");
       });
   };
+
+  const handleToggleGptSearch = () => {
+    dispatch(toggleGptSearchView());
+  }
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
@@ -50,6 +55,9 @@ const Header = () => {
       <img className="w-44" src={LOGO} alt="logo" />
       {user && (
         <div className="flex p-2">
+          <button onClick={handleToggleGptSearch} className="py-2 px-4 mx-4 my-2 bg-purple-700 text-white rounded-lg">
+            GPT Search
+          </button>
           <img className="w-12 h-12" alt="userlogo" src={user?.photoUrl} />
           <button onClick={handleSignOut} className="font-bold text-white">
             (Sign Out)
