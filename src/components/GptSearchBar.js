@@ -1,16 +1,31 @@
 import React from "react";
+import { useDispatch } from "react-redux";
+import { useSelector } from "react-redux";
+import lang from "../utilis/languageConstants";
+import { useRef } from "react";
 
 const GptSearchBar = () => {
+  const dispatch = useDispatch();
+  const langKey = useSelector((store) => store.config.lang);
+  const searchText = useRef(null);
+
+  
   return (
     <div className="pt-[35%] md:pt-[10%] flex justify-center">
-      <form className="w-full md:w-1/2 bg-black grid grid-cols-12">
+      <form
+        className="w-full md:w-1/2 bg-black grid grid-cols-12"
+        onSubmit={(e) => e.preventDefault()}
+      >
         <input
+          ref={searchText}
           className=" p-4 m-4 col-span-9"
           type="text"
-          placeholder="What are you looking for ?"
+          placeholder={lang[langKey].gptSearchPlaceholder}
         />
-        <button className="col-span-3 m-4 py-2 px-4 bg-red-700 text-white rounded-lg">
-          Search
+        <button
+          className="col-span-3 m-4 py-2 px-4 bg-red-700 text-white rounded-lg"
+        >
+          {lang[langKey].search}
         </button>
       </form>
     </div>
